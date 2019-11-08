@@ -3,7 +3,7 @@ import './App.css';
 
 //define what each item in the To-Do list can do
 //takes in todo object, the index, and the function to set as complete
-function Todo({ todo, index, completeTodo, removeTodo, colors }) {
+function Todo({ todo, index, completeTodo, removeTodo, colors, newPriority }) {
   //determines which background color to use
   //based on priority
   var color = ""
@@ -24,6 +24,11 @@ function Todo({ todo, index, completeTodo, removeTodo, colors }) {
                background: color }}
     >
       {todo.text}
+      <PrioritySetter
+        index={index}
+        newPriority={newPriority}
+        defaultPriority="e"
+      />
 
       <div>
         {/* when you click the complete button, sets isComplete = true */}
@@ -38,14 +43,15 @@ function Todo({ todo, index, completeTodo, removeTodo, colors }) {
 //sets up the form to add items to the to-do list
 function TodoForm({ addTodo }) {
   const [value, setValue] = useState("")
-  const [priority, setPriority] = useState("")
+  // const [priority, setPriority] = useState("")
 
   const handleSubmit = e => {
     e.preventDefault()
     //if there's nothing in the input, do nothing
-    if (!value || !priority) return
+    // if (!value || !priority) return
+    if (!value) return
     //otherwise addTodo
-    addTodo(value, priority)
+    addTodo(value, "a")
     //then clear the value
     setValue("")
   }
@@ -59,7 +65,7 @@ function TodoForm({ addTodo }) {
         value={value}
         onChange={e => setValue(e.target.value)}
       />
-      <input 
+      {/* <input 
         type="radio"
         name="priority"
         className="input"
@@ -103,7 +109,7 @@ function TodoForm({ addTodo }) {
         id="priorityE"
         onChange={e => setPriority(e.target.value)}
       />
-      <label htmlFor="priorityE">E</label>
+      <label htmlFor="priorityE">E</label> */}
     </form>
   )
 }
@@ -135,6 +141,24 @@ function ColorPicker({ index, currColor, changeColor }) {
       />
       <label htmlFor={"color" + index}>{label.toUpperCase()}</label>
     </div>
+  )
+}
+
+function PrioritySetter({ index, newPriority, defaultPriority }){
+  const changePriority = e => {
+    console.log("def", defaultPriority)
+    console.log("next", e.target.value)
+    newPriority(index, e.target.value)
+  }
+
+  return (
+    <select defaultValue={defaultPriority} onChange={e => changePriority(e)}>
+          <option value="a">A</option>
+          <option value="b">B</option>
+          <option value="c">C</option>
+          <option value="d">D</option>
+          <option value="e">E</option>
+    </select>
   )
 }
 
@@ -178,6 +202,13 @@ function App() {
     setTodos(newTodos)
   }
 
+  const newPriority = (index, newPrior) => {
+    const newTodos = [...todos]
+    newTodos[index].priority = newPrior
+    newTodos.sort((a,b) => (a.priority > b.priority) ? 1 : (a.priority === b.priority) ? ((a.text > b.text)) ? 1 : -1 : -1)
+    setTodos(newTodos)
+  }
+
   //deletes all completed to-do items
   //also deletes all e-priority items (intentional design philosophy)
   const removeCompletes = e => {
@@ -210,6 +241,7 @@ function App() {
             completeTodo={completeTodo}
             removeTodo={removeTodo}
             colors={colors}
+            newPriority={newPriority}
           />
         ))}
         <TodoForm addTodo={addTodo} />
